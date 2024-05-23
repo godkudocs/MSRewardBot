@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Microsoft Rewards Bot</title>
+    <title>Bing Search</title>
     <style>
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         body {
@@ -41,7 +47,8 @@
             transform: scale(1.05);
         }
 
-        p, strong {
+        p,
+        strong {
             margin: 5px 0;
             animation: fadeIn 1.5s ease-in-out;
         }
@@ -49,10 +56,6 @@
         #status {
             font-size: 18px;
             margin-bottom: 20px;
-        }
-
-        iframe {
-            display: none;
         }
 
         .container {
@@ -75,128 +78,60 @@
             font-size: 12px;
             color: #888;
         }
+
+        #debugFrame {
+            display: none;
+            width: 100%;
+            height: 80vh;
+            border: none;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <p class="header">Microsoft Rewards Bot</p>
-        <p>Status: <strong id="status">Currently running...</strong></p>
-        <p>Auto reload page: <strong id="reloadstatus"></strong></p>
-        <button id="reload">Toggle</button>
-        <p>Current search per load: <strong id="searches"></strong></p>
-        <button id="change">Change</button>
-        <button id="reset">Reset</button>
-        <p>Reload delay (ms): <strong id="rd"></strong></p>
-        <button id="cdelay">Change</button><br><br>
-        <button id="dm"><span id="dms"></span> Debug Mode</button>
-        <p class="footer">&copy; 2024 GodkuDocs. All rights reserved.</p>
+        <div class="header">Bing Search</div>
+        <p id="status">Searching...</p>
+        <iframe id="searchFrame" src="" width="1000" height="600"></iframe>
+        <iframe id="debugFrame" src="" width="1000" height="600"></iframe>
+        <button onclick="searchNext()">Next</button>
+        <button onclick="toggleDebug()">Toggle Debug</button>
+        <div class="footer">Powered by Bing</div>
     </div>
 
     <script>
-        window.onload = function() {
-            function checkBoolean(v) {
-                return "" + v.toLowerCase() === 'true';
+        const words = [];
+
+        // Fetch words from file
+        fetch('words.txt')
+            .then(response => response.text())
+            .then(data => {
+                words.push(...data.split('\n').map(word => word.trim()).filter(word => word !== ''));
+                document.getElementById('status').innerText = `Found ${words.length} words`;
+            })
+            .catch(error => {
+                console.error('Error fetching words:', error);
+                document.getElementById('status').innerText = 'Error fetching words';
+            });
+
+        let currentIndex = 0;
+
+        function searchNext() {
+            if (currentIndex < words.length) {
+                const word = words[currentIndex++];
+                document.getElementById('status').innerText = `Searching for "${word}"`;
+                const searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(word)}`;
+                document.getElementById('searchFrame').src = searchUrl;
+            } else {
+                document.getElementById('status').innerText = 'All words searched';
             }
+        }
 
-            if (!localStorage.getItem("searches")) localStorage.setItem("searches", 1);
-            if (!localStorage.getItem("autoreload")) localStorage.setItem("autoreload", false);
-            if (!localStorage.getItem("debug")) localStorage.setItem("debug", false);
-            if (!localStorage.getItem("rd")) localStorage.setItem("rd", 1000);
-
-            window.setInterval(function() {
-                document.querySelector("#searches").innerText = "" + localStorage.getItem("searches");
-                document.querySelector("#rd").innerText = "" + localStorage.getItem("rd");
-                document.querySelector("#reloadstatus").innerText = "" + localStorage.getItem("autoreload");
-                if (checkBoolean(localStorage.getItem("debug"))) {
-                    document.querySelector("#dms").innerText = "Disable";
-                } else {
-                    document.querySelector("#dms").innerText = "Enable";
-                }
-            }, 1000);
-
-            document.querySelector("#reload").onclick = function() {
-                localStorage.setItem("autoreload", !checkBoolean(localStorage.getItem("autoreload")));
-            }
-
-            document.querySelector("#dm").onclick = function() {
-                localStorage.setItem("debug", !checkBoolean(localStorage.getItem("debug")));
-                let dbg = new URL(location.href);
-                dbg.searchParams.set("debug", localStorage.getItem("debug"));
-                location.href = dbg;
-            }
-
-            document.querySelector("#change").onclick = function() {
-                let w = prompt("Enter the number of searches (1-100):");
-                if (w <= 0 || w > 100) {
-                    alert("Number must be between 1 and 100.")
-                } else {
-                    localStorage.setItem("searches", Number(w));
-                }
-            }
-
-            document.querySelector("#cdelay").onclick = function() {
-                let w = prompt("Enter the reload delay in milliseconds (must be greater than 0):");
-                if (w <= 0) {
-                    alert("Number must be larger than 0.")
-                } else {
-                    localStorage.setItem("rd", Number(w));
-                }
-            }
-
-            document.querySelector("#reset").onclick = function() {
-                localStorage.setItem("searches", 1);
-            }
-
-            const searchWords = [
-                "cat", "dog", "weather", "news", "music", "movies", "technology", "science", "sports", "travel",
-                "food", "health", "history", "art", "education", "economy", "politics", "environment", "space",
-                "literature", "fashion", "architecture", "culture", "games", "internet", "photography", "nature",
-                "philosophy", "psychology", "biology", "chemistry", "physics", "mathematics", "engineering", "medicine",
-                "robotics", "programming", "artificial intelligence", "machine learning", "big data", "blockchain",
-                "cryptocurrency", "finance", "investment", "stocks", "real estate", "marketing", "social media",
-                "advertising", "commerce", "entrepreneurship", "leadership", "management", "innovation", "design",
-                "startup", "wellness", "fitness"
-            ];
-
-
-            function createIframe() {
-                let randomWord = searchWords[Math.floor(Math.random() * searchWords.length)];
-                let a = document.createElement("iframe");
-                let bingurl = new URL("https://www.bing.com/news/search?q=" + encodeURIComponent(randomWord));
-                bingurl.searchParams.set("setmkt", "en-us");
-                bingurl.searchParams.set("setlang", "en");
-                a.src = bingurl.href;
-                document.body.appendChild(a);
-                if (!checkBoolean(new URL(location.href).searchParams.get("debug"))) {
-                    a.style.display = "none";
-                    a.contentWindow.onload = function() {
-                        window.setTimeout(function() {
-                            a.remove();
-                        }, 2000);
-                    }
-                    frameReady += 1;
-                }
-            }
-
-            for (let i = 0; i < Number(localStorage.getItem("searches")); i++) {
-                createIframe();
-            }
-
-            let frameReady = 0;
-            let isDone = window.setInterval(function() {
-                if (frameReady >= (Number(localStorage.getItem("searches")) - 1)) {
-                    window.clearInterval(isDone);
-                    if (checkBoolean(localStorage.getItem("autoreload"))) {
-                        document.querySelector("#status").innerText = `Done! Reloading in ${parseFloat(Number(localStorage.getItem("rd")) / 1000).toFixed(2)} seconds...`;
-                        window.setTimeout(function() {
-                            location.reload();
-                        }, Number(localStorage.getItem("rd")));
-                    } else {
-                        document.querySelector("#status").innerText = "Done!";
-                    }
-                }
-            }, 1000);
+        function toggleDebug() {
+            const debugFrame = document.getElementById('debugFrame');
+            debugFrame.style.display = debugFrame.style.display === 'none' ? 'block' : 'none';
         }
     </script>
 </body>
+
 </html>
