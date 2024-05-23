@@ -18,7 +18,7 @@
 
         body {
             font-family: Arial, sans-serif;
-            background-color: #241c3a; /* Darker purple */
+            background: linear-gradient(135deg, #280c59, #0a192f); /* Dark purple and cosmic gradient */
             color: #f3f3f4;
             margin: 0;
             padding: 0;
@@ -30,9 +30,36 @@
             animation: fadeIn 1s ease-in-out;
         }
 
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1); /* White with transparency */
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Darker shadow */
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .header {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #bb86fc; /* Light purple */
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888; /* Gray */
+        }
+
+        .status {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #f3f3f4; /* White */
+        }
+
         button {
-            background-color: #6a1b9a;
-            color: #f3f3f4;
+            background-color: #6a1b9a; /* Purple */
+            color: #f3f3f4; /* White */
             border: none;
             padding: 10px 20px;
             margin: 5px;
@@ -43,47 +70,29 @@
         }
 
         button:hover {
-            background-color: #4a148c;
+            background-color: #4a148c; /* Darker purple */
             transform: scale(1.05);
         }
 
-        p,
-        strong {
-            margin: 5px 0;
-            animation: fadeIn 1.5s ease-in-out;
-        }
-
-        #status {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-
-        .container {
-            text-align: center;
-            background: #2c2542; /* Darker background */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        .header {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #bb86fc;
-        }
-
-        .footer {
+        iframe {
+            display: none;
+            width: 100%;
+            height: 600px;
+            border: none;
             margin-top: 20px;
-            font-size: 12px;
-            color: #888;
         }
 
         #debugFrame {
             display: none;
             width: 100%;
-            height: 80vh;
+            height: 600px;
             border: none;
+            margin-top: 20px;
+        }
+
+        .error {
+            color: #dc3545; /* Red */
+            font-weight: bold;
         }
     </style>
 </head>
@@ -91,11 +100,12 @@
 <body>
     <div class="container">
         <div class="header">Bing Search</div>
-        <p id="status">Searching...</p>
-        <iframe id="searchFrame" src="" width="1000" height="600"></iframe>
-        <iframe id="debugFrame" src="" width="1000" height="600"></iframe>
+        <p id="status" class="status">Loading words...</p>
+        <iframe id="searchFrame"></iframe>
+        <iframe id="debugFrame"></iframe>
         <button onclick="searchNext()">Next</button>
         <button onclick="toggleDebug()">Toggle Debug</button>
+        <div id="error" class="error"></div>
         <div class="footer">Powered by Bing</div>
     </div>
 
@@ -111,7 +121,8 @@
             })
             .catch(error => {
                 console.error('Error fetching words:', error);
-                document.getElementById('status').innerText = 'Error fetching words';
+                document.getElementById('status').innerText = '';
+                document.getElementById('error').innerText = 'Error fetching words. Please try again later.';
             });
 
         let currentIndex = 0;
