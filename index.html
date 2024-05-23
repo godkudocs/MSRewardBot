@@ -112,8 +112,8 @@
     <script>
         const words = [];
 
-        // Fetch words from file
-        fetch('words.txt')
+        // Fetch words from GitHub
+        fetch('https://raw.githubusercontent.com/godkudocs/MSRewardBot/main/words.txt')
             .then(response => response.text())
             .then(data => {
                 words.push(...data.split('\n').map(word => word.trim()).filter(word => word !== ''));
